@@ -44,8 +44,10 @@ class BaseDataSet(Dataset):
 
     def _load_data(self):
         with open(self.img_source, "r") as f:
-            for line in f:
-                _path, _label = re.split(r",", line.strip())
+            for i, line in enumerate(f):
+                if i == 0: continue
+                #TODO stanford
+                _, _label, _, _path = re.split(r" ", line.strip())
                 self.path_list.append(_path)
                 self.label_list.append(_label)
 
