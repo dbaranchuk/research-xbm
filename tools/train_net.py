@@ -57,7 +57,7 @@ def train(cfg):
     checkpointer = Checkpointer(model, optimizer, scheduler, ckp_save_path)
 
     ########
-    print(checkpointer.load())
+    print('evece', checkpointer.load())
 
     tb_save_path = os.path.join(cfg.TB_SAVE_DIR, cfg.NAME)
     os.makedirs(tb_save_path, exist_ok=True)
