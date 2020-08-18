@@ -66,6 +66,7 @@ class Checkpointer(object):
         return checkpoint
 
     def has_checkpoint(self):
+        print(self.save_dir)
         save_file = os.path.join(self.save_dir, "last_checkpoint")
         return os.path.exists(save_file)
 
