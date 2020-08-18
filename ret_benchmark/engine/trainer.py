@@ -82,7 +82,8 @@ def do_train(
             for k, v in ret_metric.items():
                 log_info[f"e_{k}"] = v
 
-            scheduler.step(log_info[f"R@1"])
+            scheduler.step(log_info[f"e_precision_at_1"])
+            # scheduler.step(log_info[f"R@1"])
             log_info["lr"] = optimizer.param_groups[0]["lr"]
             if mapr_curr > best_mapr:
                 best_mapr = mapr_curr
