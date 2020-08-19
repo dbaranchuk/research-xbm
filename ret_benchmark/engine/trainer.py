@@ -32,10 +32,9 @@ def flush_log(writer, iteration):
 def compute_all_feats(model, train_loader):
     xbm_feats, xbm_targets = [], []
     for images, targets, _ in train_loader:
-        feats = model(images)
-        print(images.shape, feats.shape, targets.shape)
+        feats = model(images.cuda())
         xbm_feats.append(feats)
-        xbm_targets.append(targets)
+        xbm_targets.append(targets.cuda())
     return torch.cat(xbm_feats, dim=0), torch.cat(xbm_targets, dim=0)
 
 
