@@ -35,7 +35,6 @@ class ContrastiveLoss(nn.Module):
             neg_pair = torch.masked_select(neg_pair_, neg_pair_ > self.margin)
 
             if inputs_col.shape[0] != inputs_row.shape[0]:
-                print(((sim_mat[i] < 1 - epsilon) & (targets_col[i] == target_row)).shape)
                 pos_freqs += ((sim_mat[i] < 1 - epsilon) & (targets_col[i] == target_row)).cpu().numpy()
                 neg_freqs += ((sim_mat[i] > self.margin) & (targets_col[i] != target_row)).cpu().numpy()
 
