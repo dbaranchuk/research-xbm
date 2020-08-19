@@ -33,6 +33,7 @@ def compute_all_feats(model, train_loader):
     xbm_feats, xbm_targets = [], []
     for images, targets, _ in train_loader:
         feats = model(images)
+        print(images.shape, feats.shape, targets.shape)
         xbm_feats.append(feats)
         xbm_targets.append(targets)
     return torch.cat(xbm_feats, dim=0), torch.cat(xbm_targets, dim=0)
