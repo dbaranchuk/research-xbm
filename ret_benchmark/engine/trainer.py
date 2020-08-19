@@ -131,7 +131,7 @@ def do_train(
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
             # TODO
-            if iteration % 10 == 0:
+            if iteration % 10 == 0 and iteration > 2000:
                 xbm_feats, xbm_targets = compute_all_feats(cfg, model)
                 xbm.enqueue_dequeue(xbm_feats, xbm_targets)
             else:
