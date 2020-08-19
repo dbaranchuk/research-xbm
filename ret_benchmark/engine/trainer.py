@@ -28,6 +28,16 @@ def flush_log(writer, iteration):
         del log_info[k]
 
 
+@torch.no_grad()
+def compute_all_feats(model, train_loader):
+    xbm_feats, xbm_targets = [], []
+    for images, targets, _ in train_loader:
+        feats = model(images)
+        xbm_feats.append(feats)
+        xbm_targets.append(targets)
+    return torch.cat(xbm_feats, dim=0), torch.cat(xbm_targets, dim=0)
+
+
 def do_train(
     cfg,
     model,
@@ -83,7 +93,6 @@ def do_train(
                 log_info[f"e_{k}"] = v
 
             scheduler.step(log_info[f"e_precision_at_1"])
-            # scheduler.step(log_info[f"R@1"])
             log_info["lr"] = optimizer.param_groups[0]["lr"]
             if mapr_curr > best_mapr:
                 best_mapr = mapr_curr
@@ -113,7 +122,11 @@ def do_train(
         log_info["batch_loss"] = loss.item()
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
-            xbm_feats, xbm_targets = xbm.get()
+            # TODO
+            if True:
+                xbm_feats, xbm_targets = compute_all_feats(model, train_loader)
+            else:
+                xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = loss + cfg.XBM.WEIGHT * xbm_loss
