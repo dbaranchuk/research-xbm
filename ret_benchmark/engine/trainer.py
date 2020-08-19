@@ -16,6 +16,7 @@ from ret_benchmark.utils.feat_extractor import feat_extractor
 from ret_benchmark.utils.metric_logger import MetricLogger
 from ret_benchmark.utils.log_info import log_info
 from ret_benchmark.modeling.xbm import XBM
+from ret_benchmark.data import build_data
 
 
 def flush_log(writer, iteration):
@@ -29,12 +30,16 @@ def flush_log(writer, iteration):
 
 
 @torch.no_grad()
-def compute_all_feats(model, train_loader):
+def compute_all_feats(cfg, model):
     xbm_feats, xbm_targets = [], []
+
+    cfg.DATA.SAMPLE = "Random"
+    train_loader = build_data(cfg, is_train=True)
     for images, targets, _ in train_loader:
         feats = model(images.cuda())
         xbm_feats.append(feats)
         xbm_targets.append(targets.cuda())
+    cfg.DATA.SAMPLE = "RandomIdentitySampler"
     return torch.cat(xbm_feats, dim=0), torch.cat(xbm_targets, dim=0)
 
 
