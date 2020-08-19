@@ -26,6 +26,10 @@ class XBM:
             return self.feats[:self.ptr], self.targets[:self.ptr]
 
     def enqueue_dequeue(self, feats, targets):
+        if len(targets) > self.K:
+            feats = feats[:self.K]
+            targets = targets[:self.K]
+
         q_size = len(targets)
         if self.ptr + q_size > self.K:
             self.feats[-q_size:] = feats
