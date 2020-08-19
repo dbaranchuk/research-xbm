@@ -34,15 +34,15 @@ def compute_all_feats(cfg, model):
     xbm_feats, xbm_targets = [], []
 
     cfg.DATA.SAMPLE = "Random"
-    # prev_tbs = cfg.DATA.TRAIN_BATCHSIZE
-    # cfg.DATA.TRAIN_BATCHSIZE = 8
+    prev_tbs = cfg.DATA.TRAIN_BATCHSIZE
+    cfg.DATA.TRAIN_BATCHSIZE = 128
     train_loader = build_data(cfg, is_train=True)
     for images, targets, _ in train_loader:
         feats = model(images.cuda())
         xbm_feats.append(feats)
         xbm_targets.append(targets.cuda())
     cfg.DATA.SAMPLE = "RandomIdentitySampler"
-    # cfg.DATA.TRAIN_BATCHSIZE = prev_tbs
+    cfg.DATA.TRAIN_BATCHSIZE = prev_tbs
     return torch.cat(xbm_feats, dim=0), torch.cat(xbm_targets, dim=0)
 
 
@@ -131,8 +131,9 @@ def do_train(
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
             # TODO
-            if True:
+            if iteration % 10 == 0:
                 xbm_feats, xbm_targets = compute_all_feats(cfg, model)
+                xbm.enqueue_dequeue(xbm_feats, xbm_targets)
             else:
                 xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
