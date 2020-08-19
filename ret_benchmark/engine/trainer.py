@@ -110,8 +110,8 @@ def do_train(
                 logger.info(f"Performance at iteration {iteration:06d}: {ret_metric}")
             flush_log(writer, iteration)
 
-            np.save(f"xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs, allow_pickle=True)
-            np.save(f"xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs, allow_pickle=True)
+            np.save(f"full_all_feats/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs, allow_pickle=True)
+            np.save(f"full_all_feats/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs, allow_pickle=True)
 
         model.train()
 
