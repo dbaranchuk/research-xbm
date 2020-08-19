@@ -92,6 +92,7 @@ def do_train(
             else:
                 logger.info(f"Performance at iteration {iteration:06d}: {ret_metric}")
             flush_log(writer, iteration)
+            np.save(f"neg_freqs_{iteration:06d}.npy", criterion.total_freqs, allow_pickle=True)
 
         model.train()
 

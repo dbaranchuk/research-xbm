@@ -57,7 +57,6 @@ def train(cfg):
     os.makedirs(ckp_save_path, exist_ok=True)
     checkpointer = Checkpointer(model, optimizer, scheduler, ckp_save_path)
 
-
     tb_save_path = os.path.join(cfg.TB_SAVE_DIR, cfg.NAME)
     os.makedirs(tb_save_path, exist_ok=True)
     writer = SummaryWriter(tb_save_path)
