@@ -30,20 +30,46 @@ def flush_log(writer, iteration):
 
 
 @torch.no_grad()
-def compute_all_feats(cfg, model):
-    xbm_feats, xbm_targets = [], []
+def compute_all_feats(cfg, model, xbm):
+    left_old_feats = xbm.ptr - cfg.DATA.TRAIN_BATCHSIZE
+    right_old_feats = xbm.ptr
 
-    cfg.DATA.SAMPLE = "Random"
+    num_samples = xbm.K if xbm.is_full() else left_old_feats
+    xbm_feats = torch.zeros(num_samples, 128).cuda()
+    xbm_targets = torch.zeros(num_samples, dtype=torch.long).cuda()
+
     prev_tbs = cfg.DATA.TRAIN_BATCHSIZE
     cfg.DATA.TRAIN_BATCHSIZE = 128
     train_loader = build_data(cfg, is_train=True)
-    for images, targets, _ in train_loader:
+    _train_loader = iter(train_loader)
+    counter = 0
+    while counter < num_samples:
+        try:
+            images, targets, _ = _train_loader.next()
+        except StopIteration:
+            _train_loader = iter(train_loader)
+            images, targets, _ = _train_loader.next()
+
         feats = model(images.cuda())
-        xbm_feats.append(feats)
-        xbm_targets.append(targets.cuda())
-    cfg.DATA.SAMPLE = "RandomIdentitySampler"
+
+        if counter + len(images) > num_samples:
+            xbm_feats[counter:] = feats[:num_samples - counter]
+            xbm_targets[counter:] = targets[:num_samples - counter].cuda()
+        else:
+            xbm_feats[counter: counter + len(images)] = feats
+            xbm_targets[counter: counter + len(images)] = targets.cuda()
+        counter += len(images)
+
     cfg.DATA.TRAIN_BATCHSIZE = prev_tbs
-    return torch.cat(xbm_feats, dim=0), torch.cat(xbm_targets, dim=0)
+    if left_old_feats >= 0:
+        xbm.feats[:left_old_feats] = xbm_feats[:left_old_feats]
+        xbm.targets[:left_old_feats] = xbm_targets[:left_old_feats]
+        if xbm.is_full():
+            xbm.feats[right_old_feats:] = xbm_feats[right_old_feats:]
+            xbm.targets[right_old_feats:] = xbm_targets[right_old_feats:]
+    else:
+        xbm.feats[right_old_feats: left_old_feats] = xbm_feats[right_old_feats: left_old_feats]
+        xbm.targets[right_old_feats: left_old_feats] = xbm_targets[right_old_feats: left_old_feats]
 
 
 def do_train(
@@ -132,11 +158,10 @@ def do_train(
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
             # TODO
-            if iteration % 10 == 0: # and iteration > 2000:
-                xbm_feats, xbm_targets = compute_all_feats(cfg, model)
-                xbm.enqueue_dequeue(xbm_feats, xbm_targets)
-            else:
-                xbm_feats, xbm_targets = xbm.get()
+            if iteration % 100 == 0: # and iteration > 2000:
+                compute_all_feats(cfg, model, xbm)
+
+            xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = loss + cfg.XBM.WEIGHT * xbm_loss
