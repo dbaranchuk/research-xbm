@@ -10,6 +10,7 @@ import time
 
 import numpy as np
 import torch
+import os
 
 from ret_benchmark.data.evaluations.eval import AccuracyCalculator
 from ret_benchmark.utils.feat_extractor import feat_extractor
@@ -138,10 +139,6 @@ def do_train(
                 logger.info(f"Performance at iteration {iteration:06d}: {ret_metric}")
             flush_log(writer, iteration)
 
-            # if iteration > 20000:
-                # np.save(f"all_feats_each10/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs, allow_pickle=True)
-                # np.save(f"all_feats_each10/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs, allow_pickle=True)
-
         model.train()
 
         data_time = time.time() - end
@@ -159,9 +156,24 @@ def do_train(
         log_info["batch_loss"] = loss.item()
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
-            # TODO
-            if iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0 and iteration > cfg.XBM.UPDATE_FEATS_START_ITERATION:
+            if cfg.XBM.UPDATE_FEATS_ITERATION > 0 and \
+               iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0 and \
+               iteration > cfg.XBM.UPDATE_FEATS_START_ITERATION:
+                t0 = time.time()
                 compute_all_feats(cfg, model, train_loader, xbm)
+                print(f"Update all feats in XBM: {time.time() - t0}s")
+                if iteration % 1000 == 0:
+                    os.makedirs("topk_freqs_each50", exist_ok=True)
+                    np.save(f"topk_freqs_each50/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
+                            allow_pickle=True)
+                    np.save(f"topk_freqs_each50/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
+                            allow_pickle=True)
+            elif iteration >= 30000 and iteration % 1000 == 0:
+                os.makedirs("topk_freqs_origin", exist_ok=True)
+                np.save(f"topk_freqs_origin/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
+                        allow_pickle=True)
+                np.save(f"topk_freqs_origin/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
+                        allow_pickle=True)
 
             xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
@@ -178,7 +190,7 @@ def do_train(
         eta_seconds = meters.time.global_avg * (max_iter - iteration)
         eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
 
-        if iteration % 20 == 0 or iteration == max_iter:
+        if iteration % 40 == 0 or iteration == max_iter:
             logger.info(
                 meters.delimiter.join(
                     [
