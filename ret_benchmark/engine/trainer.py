@@ -34,7 +34,7 @@ def compute_all_feats(cfg, model, xbm):
     left_old_feats = xbm.ptr - cfg.DATA.TRAIN_BATCHSIZE
     right_old_feats = xbm.ptr
 
-    num_samples = xbm.K if xbm.is_full() else left_old_feats
+    num_samples = xbm.K if xbm.is_full else left_old_feats
     xbm_feats = torch.zeros(num_samples, 128).cuda()
     xbm_targets = torch.zeros(num_samples, dtype=torch.long).cuda()
 
@@ -64,7 +64,7 @@ def compute_all_feats(cfg, model, xbm):
     if left_old_feats >= 0:
         xbm.feats[:left_old_feats] = xbm_feats[:left_old_feats]
         xbm.targets[:left_old_feats] = xbm_targets[:left_old_feats]
-        if xbm.is_full():
+        if xbm.is_full:
             xbm.feats[right_old_feats:] = xbm_feats[right_old_feats:]
             xbm.targets[right_old_feats:] = xbm_targets[right_old_feats:]
     else:
