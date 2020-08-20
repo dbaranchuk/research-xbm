@@ -160,7 +160,7 @@ def do_train(
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
             # TODO
-            if iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0: # and iteration > 2000:
+            if iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0 and iteration > cfg.XBM.UPDATE_FEATS_START_ITERATION:
                 compute_all_feats(cfg, model, train_loader, xbm)
 
             xbm_feats, xbm_targets = xbm.get()
