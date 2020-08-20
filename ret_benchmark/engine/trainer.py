@@ -30,7 +30,7 @@ def flush_log(writer, iteration):
 
 
 @torch.no_grad()
-def compute_all_feats(cfg, model, xbm):
+def compute_all_feats(cfg, model, train_loader, xbm):
     left_old_feats = xbm.ptr - cfg.DATA.TRAIN_BATCHSIZE
     right_old_feats = xbm.ptr
 
@@ -38,10 +38,11 @@ def compute_all_feats(cfg, model, xbm):
     xbm_feats = torch.zeros(num_samples, 128).cuda()
     xbm_targets = torch.zeros(num_samples, dtype=torch.long).cuda()
 
-    prev_tbs = cfg.DATA.TRAIN_BATCHSIZE
-    cfg.DATA.TRAIN_BATCHSIZE = 128
-    train_loader = build_data(cfg, is_train=True)
+    # prev_tbs = cfg.DATA.TRAIN_BATCHSIZE
+    # cfg.DATA.TRAIN_BATCHSIZE = 256
+    # train_loader = build_data(cfg, is_train=True)
     _train_loader = iter(train_loader)
+    model.eval()
     counter = 0
     while counter < num_samples:
         try:
@@ -59,8 +60,9 @@ def compute_all_feats(cfg, model, xbm):
             xbm_feats[counter: counter + len(images)] = feats
             xbm_targets[counter: counter + len(images)] = targets.cuda()
         counter += len(images)
+    model.train()
 
-    cfg.DATA.TRAIN_BATCHSIZE = prev_tbs
+    # cfg.DATA.TRAIN_BATCHSIZE = prev_tbs
     if left_old_feats >= 0:
         xbm.feats[:left_old_feats] = xbm_feats[:left_old_feats]
         xbm.targets[:left_old_feats] = xbm_targets[:left_old_feats]
@@ -159,7 +161,7 @@ def do_train(
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
             # TODO
             if iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0: # and iteration > 2000:
-                compute_all_feats(cfg, model, xbm)
+                compute_all_feats(cfg, model, train_loader, xbm)
 
             xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
