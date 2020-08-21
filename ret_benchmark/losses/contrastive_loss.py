@@ -35,6 +35,7 @@ class ContrastiveLoss(nn.Module):
 
             if inputs_col.shape[0] != inputs_row.shape[0] and self.neg_topk > 0:
                 neg_pair = neg_pair_[torch.topk(neg_pair_, self.neg_topk, largest=True)[1]]
+                print(len(neg_pair))
             else:
                 neg_pair = torch.masked_select(neg_pair_, neg_pair_ > self.margin)
 
