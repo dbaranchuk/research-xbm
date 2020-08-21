@@ -180,12 +180,12 @@ def do_train(
             log_info["xbm_loss"] = xbm_loss.item()
             loss = loss + cfg.XBM.WEIGHT * xbm_loss
 
-        if cfg.XBM.ENABLE and iteration >= cfg.XBM.START_ITERATION:
-            xbm.enqueue_dequeue(feats.detach(), targets.detach())
-
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        if cfg.XBM.ENABLE and iteration >= cfg.XBM.START_ITERATION:
+            xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         batch_time = time.time() - end
         end = time.time()
