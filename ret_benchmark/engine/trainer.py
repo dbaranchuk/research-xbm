@@ -178,7 +178,7 @@ def do_train(
             xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
             log_info["xbm_loss"] = xbm_loss.item()
-            loss = loss + cfg.XBM.WEIGHT * xbm_loss
+            loss = 1.5 * loss + cfg.XBM.WEIGHT * xbm_loss
 
         optimizer.zero_grad()
         loss.backward()
