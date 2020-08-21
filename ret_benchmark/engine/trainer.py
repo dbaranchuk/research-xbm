@@ -169,10 +169,10 @@ def do_train(
                     np.save(f"topk_freqs_each50/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                             allow_pickle=True)
             elif iteration >= 30000 and iteration % 1000 == 0:
-                os.makedirs("topk_freqs_remove_repeats_in_xbm", exist_ok=True)
-                np.save(f"topk_freqs_remove_repeats_in_xbm/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
+                os.makedirs("topk_freqs_remove_repeats_in_xbm_55k", exist_ok=True)
+                np.save(f"topk_freqs_remove_repeats_in_xbm_55k/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                         allow_pickle=True)
-                np.save(f"topk_freqs_remove_repeats_in_xbm/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
+                np.save(f"topk_freqs_remove_repeats_in_xbm_55k/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                         allow_pickle=True)
 
             xbm_feats, xbm_targets = xbm.get()
