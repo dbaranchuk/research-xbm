@@ -164,15 +164,15 @@ def do_train(
                 print(f"Update all feats in XBM: {time.time() - t0}s")
                 if iteration % 1000 == 0:
                     os.makedirs("topk_freqs_each50", exist_ok=True)
-                    np.save(f"topk_freqs_each50/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
+                    np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                             allow_pickle=True)
-                    np.save(f"topk_freqs_each50/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
+                    np.save(writer.log_dir + f"/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                             allow_pickle=True)
             elif iteration >= 30000 and iteration % 1000 == 0:
                 os.makedirs("topk_freqs_remove_repeats_in_xbm_55k", exist_ok=True)
-                np.save(f"topk_freqs_remove_repeats_in_xbm_55k/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
+                np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                         allow_pickle=True)
-                np.save(f"topk_freqs_remove_repeats_in_xbm_55k/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
+                np.save(writer.log_dir + f"/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                         allow_pickle=True)
 
             xbm_feats, xbm_targets = xbm.get()
