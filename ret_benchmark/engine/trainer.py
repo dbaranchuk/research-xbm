@@ -149,8 +149,8 @@ def do_train(
         targets = targets.to(device)
         feats = model(images)
 
-        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
-            xbm.enqueue_dequeue(feats.detach(), targets.detach())
+        # if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
+        #     xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         loss = criterion(feats, targets, feats, targets)
         log_info["batch_loss"] = loss.item()
@@ -169,16 +169,19 @@ def do_train(
                     np.save(f"topk_freqs_each50/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                             allow_pickle=True)
             elif iteration >= 30000 and iteration % 1000 == 0:
-                os.makedirs("topk_freqs_origin", exist_ok=True)
-                np.save(f"topk_freqs_origin/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
+                os.makedirs("topk_freqs_remove_repeats_in_xbm", exist_ok=True)
+                np.save(f"topk_freqs_remove_repeats_in_xbm/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                         allow_pickle=True)
-                np.save(f"topk_freqs_origin/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
+                np.save(f"topk_freqs_remove_repeats_in_xbm/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                         allow_pickle=True)
 
             xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = loss + cfg.XBM.WEIGHT * xbm_loss
+
+        if cfg.XBM.ENABLE and iteration >= cfg.XBM.START_ITERATION:
+            xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         optimizer.zero_grad()
         loss.backward()
