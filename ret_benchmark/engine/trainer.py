@@ -155,7 +155,7 @@ def do_train(
         loss = criterion(feats, targets, feats, targets)
         log_info["batch_loss"] = loss.item()
 
-        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
+        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION and not xbm.is_empty:
             if cfg.XBM.UPDATE_FEATS_ITERATION > 0 and \
                iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0 and \
                iteration > cfg.XBM.UPDATE_FEATS_START_ITERATION:
@@ -184,7 +184,7 @@ def do_train(
         loss.backward()
         optimizer.step()
 
-        if cfg.XBM.ENABLE and iteration >= cfg.XBM.START_ITERATION:
+        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION - 1: # -1 to collect xbm of batch_size
             xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         batch_time = time.time() - end

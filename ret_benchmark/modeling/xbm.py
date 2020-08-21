@@ -12,12 +12,16 @@ class XBM:
     def __init__(self, cfg):
         self.K = cfg.XBM.SIZE
         self.feats = torch.zeros(self.K, 128).cuda()
-        self.targets = torch.zeros(self.K, dtype=torch.long).cuda()
+        self.targets = torch.zeros(self.K, dtype=torch.long).cuda() - 1
         self.ptr = 0
 
     @property
     def is_full(self):
-        return self.targets[-1].item() != 0
+        return self.targets[-1].item() != -1
+
+    @property
+    def is_empty(self):
+        return self.ptr == 0 and self.targets[0].item() == -1
 
     def get(self):
         if self.is_full:
@@ -32,10 +36,15 @@ class XBM:
 
         q_size = len(targets)
         if self.ptr + q_size > self.K:
-            self.feats[-q_size:] = feats
-            self.targets[-q_size:] = targets
-            self.ptr = 0
+            remainder = self.K - self.ptr
+            self.feats[self.ptr:] = feats[:remainder]
+            self.targets[self.ptr:] = targets[:remainder]
+
+            self.feats[: q_size - remainder] = feats[remainder:]
+            self.targets[: q_size - remainder] = targets[remainder:]
         else:
             self.feats[self.ptr: self.ptr + q_size] = feats
             self.targets[self.ptr: self.ptr + q_size] = targets
-            self.ptr += q_size
+
+        self.ptr += q_size
+        self.ptr = self.ptr % self.K
