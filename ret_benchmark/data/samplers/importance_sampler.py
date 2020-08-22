@@ -66,32 +66,30 @@ class ImportanceSampler(Sampler):
     def update_scorer(self, model):
         self.scorer = Scorer(model)
 
+    @torch.no_grad()
     def _update_scores(self, idxs=None):
-        t0 = time.time()
-        with torch.no_grad():
-            if idxs is None:  # update all
+        self.scorer.eval()
+        if idxs is None:  # update all
+            batch_size = 256
+            for batch_start in range(0, len(self.dataset), batch_size):
+                if batch_start + batch_size > len(self.dataset):
+                    batch_size = len(self.dataset) - batch_start
+                batch =torch.stack([self.dataset[batch_start + i][0] for i in range(batch_size)])
+                self.scores[batch_start: batch_start + batch_size] = self.scorer(batch.cuda()).cpu().view(-1)
                 batch_size = 256
-                for batch_start in range(0, len(self.dataset), batch_size):
-                    if batch_start + batch_size > len(self.dataset):
-                        batch_size = len(self.dataset) - batch_start
-                    batch =torch.stack([self.dataset[batch_start + i][0] for i in range(batch_size)])
-                    self.scores[batch_start: batch_start + batch_size] = self.scorer(batch.cuda()).cpu().view(-1)
-                    batch_size = 256
-                U = torch.rand_like(self.scores)
-                gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
-                self.scores += gumbel_noise
-            else:
-                assert len(idxs) <= 256
-                batch = torch.stack([self.dataset[i][0] for i in idxs])
-                scores = self.scorer(batch.cuda()).cpu().view(-1)
+            U = torch.rand_like(self.scores)
+            gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
+            self.scores += gumbel_noise
+        else:
+            assert len(idxs) <= 256
+            batch = torch.stack([self.dataset[i][0] for i in idxs])
+            scores = self.scorer(batch.cuda()).cpu().view(-1)
 
-                U = torch.rand_like(scores)
-                gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
-                scores += gumbel_noise
-                for i, idx in enumerate(idxs):
-                    self.scores[idx] = scores[i]
-
-        print(f"Update IS scores: {time.time() - t0}s")
+            U = torch.rand_like(scores)
+            gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
+            scores += gumbel_noise
+            for i, idx in enumerate(idxs):
+                self.scores[idx] = scores[i]
 
     def _prepare_batch(self):
         batch_idxs_dict = defaultdict(list)
