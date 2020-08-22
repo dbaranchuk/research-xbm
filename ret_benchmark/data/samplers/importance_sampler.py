@@ -80,7 +80,7 @@ class ImportanceSampler(Sampler):
             if self.scorer is not None and len(idxs) > self.K:
                 with torch.no_grad():
                     x = torch.stack([self.dataset[idx][0] for idx in idxs])
-                    scores = self.scorer(x).cpu()
+                    scores = self.scorer(x.cuda()).cpu()
                 U = torch.rand_like(scores)
                 gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
                 sampled_idxs = torch.topk(scores + gumbel_noise, self.K, largest=True)[1].tolist()
