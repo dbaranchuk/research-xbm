@@ -19,7 +19,7 @@ from ret_benchmark.modeling import build_model
 from ret_benchmark.solver import build_lr_scheduler, build_optimizer
 from ret_benchmark.utils.logger import setup_logger
 from ret_benchmark.utils.checkpoint import Checkpointer
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 import resource
 
