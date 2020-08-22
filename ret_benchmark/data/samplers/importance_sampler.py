@@ -130,8 +130,10 @@ class ImportanceSampler(Sampler):
                     batch_idxs = batch_idxs_dict[label][0]
                 else:
                     idxs = list(itertools.chain.from_iterable(batch_idxs_dict[label]))
-                    self._update_scores(idxs=idxs)
-                    batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
+                    random.shuffle(idxs)
+                    batch_idxs = idxs[:self.K]
+                    #self._update_scores(idxs=idxs)
+                    #batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
 
                 batch.extend(batch_idxs)
                 label_idx = avai_labels.index(label)
