@@ -34,7 +34,6 @@ def build_data(cfg, is_train=True):
                 pin_memory=True,
             )
         elif cfg.DATA.SAMPLE == "ImportanceSampler":
-            print("HUI")
             sampler = ImportanceSampler(
                 dataset=dataset,
                 batch_size=cfg.DATA.TRAIN_BATCHSIZE,

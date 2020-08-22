@@ -108,7 +108,7 @@ def do_train(
 
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
-        if isinstance(train_loader.sampler, ImportanceSampler):
+        if cfg.DATA.SAMPLE == "ImportanceSampler":
             train_loader.sampler.update_scorer(model)
         try:
             images, targets, indices = _train_loader.next()
