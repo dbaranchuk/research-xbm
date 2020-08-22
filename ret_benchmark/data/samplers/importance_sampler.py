@@ -10,6 +10,7 @@
 import copy
 import random
 from collections import defaultdict
+import itertools
 
 import time
 import torch
@@ -51,6 +52,7 @@ class ImportanceSampler(Sampler):
 
         self.scorer = None
         self.dataset = dataset
+        self.scores = torch.zeros(len(self.dataset))
 
     def __len__(self):
         return self.max_iters
@@ -64,10 +66,36 @@ class ImportanceSampler(Sampler):
     def update_scorer(self, model):
         self.scorer = Scorer(model)
 
+    def _update_scores(self, idxs=None):
+        t0 = time.time()
+        with torch.no_grad():
+            if idxs is None:  # update all
+                batch_size = 256
+                for batch_start in range(0, len(self.dataset), batch_size):
+                    if batch_start + batch_size > len(self.dataset):
+                        batch_size = len(self.dataset) - batch_start
+                    batch =torch.stack([self.dataset[batch_start + i][0] for i in range(batch_size)])
+                    self.scores[batch_start: batch_start + batch_size] = self.scorer(batch.cuda()).cpu().view(-1)
+                    batch_size = 256
+                U = torch.rand_like(self.scores)
+                gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
+                self.scores += gumbel_noise
+            else:
+                assert len(idxs) <= 256
+                batch = torch.stack([self.dataset[i][0] for i in idxs])
+                scores = self.scorer(batch.cuda()).cpu().view(-1)
+
+                U = torch.rand_like(scores)
+                gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
+                scores += gumbel_noise
+                for i, idx in enumerate(idxs):
+                    self.scores[idx] = scores[i]
+
+        print(f"Update IS scores: {time.time() - t0}s")
+
     def _prepare_batch(self):
         batch_idxs_dict = defaultdict(list)
         count = list()
-        t0 = time.time()
 
         for label in self.labels:
             idxs = copy.deepcopy(self.label_index_dict[label])
@@ -77,25 +105,14 @@ class ImportanceSampler(Sampler):
                         idxs, size=self.K - len(idxs) % self.K, replace=True
                     )
                 )
-            if self.scorer is not None and len(idxs) > self.K:
-                with torch.no_grad():
-                    x = torch.stack([self.dataset[idx][0] for idx in idxs])
-                    scores = self.scorer(x.cuda()).cpu()
-                U = torch.rand_like(scores)
-                gumbel_noise = torch.log(-torch.log(U + 1e-20) + 1e-20)
-                sampled_idxs = torch.topk(scores + gumbel_noise, self.K, largest=True)[1].tolist()
-                batch_idxs_dict[label] = [sampled_idxs]
-            else:
-                random.shuffle(idxs)
-                batch_idxs_dict[label] = [
-                    idxs[i * self.K : (i + 1) * self.K] for i in range(len(idxs) // self.K)
-                ]
+            random.shuffle(idxs)
+            batch_idxs_dict[label] = [
+                idxs[i * self.K : (i + 1) * self.K] for i in range(len(idxs) // self.K)
+            ]
 
             count.append(len(batch_idxs_dict[label]))
         count = np.array(count)
         avai_labels = copy.deepcopy(self.labels)
-        if self.scorer is not None:
-            print(f"_prepare_data with IS {time.time() - t0}s")
         return batch_idxs_dict, avai_labels, count
 
     def __iter__(self):
@@ -109,7 +126,14 @@ class ImportanceSampler(Sampler):
                 avai_labels, self.num_labels_per_batch, False, count / count.sum()
             )
             for label in selected_labels:
-                batch_idxs = batch_idxs_dict[label].pop(0)
+                if self.scorer is None:
+                    batch_idxs = batch_idxs_dict[label].pop(0)
+                else:
+                    idxs = list(itertools.chain.from_iterable(batch_idxs_dict[label]))
+                    self._update_scores(idxs=idxs)
+                    batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
+                    batch_idxs_dict[label] = []
+
                 batch.extend(batch_idxs)
                 label_idx = avai_labels.index(label)
                 if len(batch_idxs_dict[label]) == 0:
