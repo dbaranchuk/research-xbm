@@ -77,7 +77,7 @@ class ImportanceSampler(Sampler):
                         idxs, size=self.K - len(idxs) % self.K, replace=True
                     )
                 )
-            if self.scorer is not None:
+            if self.scorer is not None and len(idxs) > self.K:
                 with torch.no_grad():
                     x = torch.stack([self.dataset[idx][0] for idx in idxs])
                     scores = self.scorer(x).cpu()
