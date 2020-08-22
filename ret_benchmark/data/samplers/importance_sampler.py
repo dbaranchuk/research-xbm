@@ -29,7 +29,7 @@ class Scorer(nn.Module):
     def forward(self, x):
         x = self.model.backbone(x)
         x = self.model.head.fc(x)
-        return x.norm(2, dim=-1)
+        return x.norm(2, dim=-1).sqrt()
 
 
 class ImportanceSampler(Sampler):
