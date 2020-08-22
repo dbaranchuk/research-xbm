@@ -162,7 +162,7 @@ def do_train(
                 t0 = time.time()
                 compute_all_feats(cfg, model, train_loader, xbm)
                 print(f"Update all feats in XBM: {time.time() - t0}s")
-                if iteration % 1000 == 0:
+                if iteration >= 10000 and iteration % 1000 == 0:
                     os.makedirs(writer.log_dir, exist_ok=True)
                     np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                             allow_pickle=True)
