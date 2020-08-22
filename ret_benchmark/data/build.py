@@ -33,7 +33,7 @@ def build_data(cfg, is_train=True):
                 num_workers=cfg.DATA.NUM_WORKERS,
                 pin_memory=True,
             )
-        if cfg.DATA.SAMPLE == "ImportanceSampler":
+        elif cfg.DATA.SAMPLE == "ImportanceSampler":
             sampler = ImportanceSampler(
                 dataset=dataset,
                 batch_size=cfg.DATA.TRAIN_BATCHSIZE,
