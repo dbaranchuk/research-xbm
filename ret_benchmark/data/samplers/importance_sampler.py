@@ -63,7 +63,6 @@ class ImportanceSampler(Sampler):
 
     def update_scorer(self, model):
         self.scorer = Scorer(model)
-        print(self.scorer)
 
     def _prepare_batch(self):
         batch_idxs_dict = defaultdict(list)
@@ -78,9 +77,7 @@ class ImportanceSampler(Sampler):
                         idxs, size=self.K - len(idxs) % self.K, replace=True
                     )
                 )
-            print("HUI")
             if self.scorer is not None and len(idxs) > self.K:
-                print("PIZDA")
                 with torch.no_grad():
                     x = torch.stack([self.dataset[idx][0] for idx in idxs])
                     scores = self.scorer(x).cpu()

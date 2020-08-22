@@ -106,6 +106,8 @@ def do_train(
 
     iteration = 0
 
+    if cfg.DATA.SAMPLE == "ImportanceSampler":
+        train_loader.batch_sampler.update_scorer(model)
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
         if cfg.DATA.SAMPLE == "ImportanceSampler":
