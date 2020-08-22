@@ -124,22 +124,24 @@ class ImportanceSampler(Sampler):
                 avai_labels, self.num_labels_per_batch, False, count / count.sum()
             )
             for label in selected_labels:
-                if self.scorer is None:
+                if self.scorer is None or len(batch_idxs_dict[label]) == 1:
                     batch_idxs = batch_idxs_dict[label].pop(0)
-                elif len(batch_idxs_dict[label]) == 1:
-                    batch_idxs = batch_idxs_dict[label][0]
+                    batch.extend(batch_idxs)
+                    label_idx = avai_labels.index(label)
+                    if len(batch_idxs_dict[label]) == 0:
+                        avai_labels.pop(label_idx)
+                        count = np.delete(count, label_idx)
+                    else:
+                        count[label_idx] = len(batch_idxs_dict[label])
                 else:
                     idxs = list(itertools.chain.from_iterable(batch_idxs_dict[label]))
-                    random.shuffle(idxs)
-                    batch_idxs = idxs[:self.K]
-                    #self._update_scores(idxs=idxs)
-                    #batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
+                    self._update_scores(idxs=idxs)
+                    batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
 
-                batch.extend(batch_idxs)
-                label_idx = avai_labels.index(label)
-                if len(batch_idxs_dict[label]) == 0:
-                    avai_labels.pop(label_idx)
-                    count = np.delete(count, label_idx)
-                else:
-                    count[label_idx] = len(batch_idxs_dict[label])
+                    batch.extend(batch_idxs)
+                    label_idx = avai_labels.index(label)
+                    count[label_idx] -= 1
+                    if count[label_idx] == 0:
+                        avai_labels.pop(label_idx)
+                        count = np.delete(count, label_idx)
             yield batch
