@@ -126,17 +126,12 @@ class ImportanceSampler(Sampler):
             for label in selected_labels:
                 if self.scorer is None:
                     batch_idxs = batch_idxs_dict[label].pop(0)
+                elif len(batch_idxs_dict[label]) == 1:
+                    batch_idxs = batch_idxs_dict[label][0]
                 else:
                     idxs = list(itertools.chain.from_iterable(batch_idxs_dict[label]))
                     self._update_scores(idxs=idxs)
                     batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
-                    print(len(idxs), len(batch_idxs), len([idx for idx in idxs if idx not in batch_idxs]))
-                    idxs = [idx for idx in idxs if idx not in batch_idxs]
-
-                    assert len(idxs) % self.K == 0
-                    batch_idxs_dict[label] = [
-                        idxs[i * self.K: (i + 1) * self.K] for i in range(len(idxs) // self.K)
-                    ]
 
                 batch.extend(batch_idxs)
                 label_idx = avai_labels.index(label)
