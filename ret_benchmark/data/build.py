@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 
 from .collate_batch import collate_fn
 from .datasets import BaseDataSet
-from .samplers import RandomIdentitySampler
+from .samplers import RandomIdentitySampler, ImportanceSampler
 from .transforms import build_transforms
 
 
@@ -21,6 +21,20 @@ def build_data(cfg, is_train=True):
         )
         if cfg.DATA.SAMPLE == "RandomIdentitySampler":
             sampler = RandomIdentitySampler(
+                dataset=dataset,
+                batch_size=cfg.DATA.TRAIN_BATCHSIZE,
+                num_instances=cfg.DATA.NUM_INSTANCES,
+                max_iters=cfg.SOLVER.MAX_ITERS,
+            )
+            data_loader = DataLoader(
+                dataset,
+                collate_fn=collate_fn,
+                batch_sampler=sampler,
+                num_workers=cfg.DATA.NUM_WORKERS,
+                pin_memory=True,
+            )
+        if cfg.DATA.SAMPLE == "ImportanceSampler":
+            sampler = ImportanceSampler(
                 dataset=dataset,
                 batch_size=cfg.DATA.TRAIN_BATCHSIZE,
                 num_instances=cfg.DATA.NUM_INSTANCES,

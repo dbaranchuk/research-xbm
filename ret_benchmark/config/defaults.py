@@ -71,7 +71,7 @@ _C.DATA.TRAIN_BATCHSIZE = 70
 _C.DATA.TEST_BATCHSIZE = 256
 _C.DATA.NUM_WORKERS = 8
 _C.DATA.NUM_INSTANCES = 5
-_C.DATA.SAMPLE = "RandomIdentitySampler"
+_C.DATA.SAMPLE = "ImportanceSampler"
 
 # Input option
 _C.INPUT = CN()

@@ -17,7 +17,7 @@ from ret_benchmark.utils.feat_extractor import feat_extractor
 from ret_benchmark.utils.metric_logger import MetricLogger
 from ret_benchmark.utils.log_info import log_info
 from ret_benchmark.modeling.xbm import XBM
-from ret_benchmark.data import build_data
+from ret_benchmark.data.samplers import ImportanceSampler
 
 
 def flush_log(writer, iteration):
@@ -108,6 +108,8 @@ def do_train(
 
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
+        if isinstance(train_loader.sampler, ImportanceSampler):
+            train_loader.sampler.update_scorer(model)
         try:
             images, targets, indices = _train_loader.next()
         except StopIteration:
