@@ -32,8 +32,8 @@ def flush_log(writer, iteration):
 
 @torch.no_grad()
 def compute_all_feats(cfg, model, train_loader, xbm):
-    left_old_feats = xbm.ptr - cfg.DATA.TRAIN_BATCHSIZE
-    right_old_feats = xbm.ptr
+    left_old_feats = xbm.ptr #- cfg.DATA.TRAIN_BATCHSIZE
+    right_old_feats = xbm.ptr + cfg.DATA.TRAIN_BATCHSIZE
 
     num_samples = xbm.K if xbm.is_full else left_old_feats
     xbm_feats = torch.zeros(num_samples, 128).cuda()
@@ -163,13 +163,13 @@ def do_train(
                 compute_all_feats(cfg, model, train_loader, xbm)
                 print(f"Update all feats in XBM: {time.time() - t0}s")
                 if iteration % 1000 == 0:
-                    os.makedirs("topk_freqs_each50", exist_ok=True)
+                    os.makedirs(writer.log_dir, exist_ok=True)
                     np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                             allow_pickle=True)
                     np.save(writer.log_dir + f"/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
                             allow_pickle=True)
             elif iteration >= 30000 and iteration % 1000 == 0:
-                os.makedirs("topk_freqs_remove_repeats_in_xbm_55k", exist_ok=True)
+                os.makedirs(writer.log_dir, exist_ok=True)
                 np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
                         allow_pickle=True)
                 np.save(writer.log_dir + f"/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
