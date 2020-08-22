@@ -152,7 +152,6 @@ def do_train(
         # if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
         #     xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
-        print(writer.log_dir)
         loss = criterion(feats, targets, feats, targets)
         log_info["batch_loss"] = loss.item()
 
