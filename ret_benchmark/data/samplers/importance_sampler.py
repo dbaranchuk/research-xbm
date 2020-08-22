@@ -12,7 +12,6 @@ import random
 from collections import defaultdict
 import itertools
 
-import time
 import torch
 import numpy as np
 import torch.nn as nn
@@ -136,7 +135,6 @@ class ImportanceSampler(Sampler):
                 else:
                     idxs = list(itertools.chain.from_iterable(batch_idxs_dict[label]))
                     self._update_scores(idxs=idxs)
-                    # print(self.scores[idxs])
                     batch_idxs = torch.topk(self.scores[idxs], self.K, largest=True)[1].tolist()
 
                     # batch_idxs = idxs[: self.K]

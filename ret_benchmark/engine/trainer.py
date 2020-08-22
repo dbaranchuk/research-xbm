@@ -107,7 +107,7 @@ def do_train(
     iteration = 0
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
-        if cfg.DATA.SAMPLE == "ImportanceSampler":# and iteration > cfg.XBM.START_ITERATION:
+        if cfg.DATA.SAMPLE == "ImportanceSampler" and iteration > 1000:
             train_loader.batch_sampler.update_scorer(model)
         try:
             images, targets, indices = _train_loader.next()
