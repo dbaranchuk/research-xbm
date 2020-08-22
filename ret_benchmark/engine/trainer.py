@@ -108,6 +108,7 @@ def do_train(
 
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
+        print(train_loader.sampler)
         if isinstance(train_loader.sampler, ImportanceSampler):
             train_loader.sampler.update_scorer(model)
         try:
