@@ -55,7 +55,7 @@ class ContrastiveLoss(nn.Module):
                 neg_loss = 0
 
             if inputs_col.shape[0] != inputs_row.shape[0]:
-                loss.append(1.5 * pos_loss + 1.08 * neg_loss)
+                loss.append(3 * pos_loss + 1.08 * neg_loss)
             else:
                 loss.append(pos_loss + neg_loss)
 
