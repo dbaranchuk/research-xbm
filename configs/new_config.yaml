@@ -1,4 +1,4 @@
-NAME: contrastive_topk_origin
+NAME: contrastive_top15_xbm_11k_reweight_xbm_loss
 
 MODEL:
   BACKBONE:
@@ -37,7 +37,7 @@ VALIDATION:
 XBM:
   ENABLE: True
   WEIGHT: 1.0
-  SIZE: 55000
+  SIZE: 11000
   START_ITERATION: 1000
   UPDATE_FEATS_ITERATION: 0
   UPDATE_FEATS_START_ITERATION: 0
