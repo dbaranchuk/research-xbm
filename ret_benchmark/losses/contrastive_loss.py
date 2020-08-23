@@ -43,13 +43,19 @@ class ContrastiveLoss(nn.Module):
                 neg_freqs += ((sim_mat[i] > self.margin) & (targets_col[i] != target_row)).cpu().numpy()
 
             if len(pos_pair_) > 0:
-                pos_loss = 6 * torch.sum(-pos_pair_ + 1) / len(pos_pair_)  # TODO: name 6
+                if inputs_col.shape[0] != inputs_row.shape[0]:
+                    pos_loss = 6 * torch.sum(-pos_pair_ + 1) / len(pos_pair_)  # TODO: name 6
+                else:
+                    pos_loss = torch.sum(-pos_pair_ + 1)
                 pos_count.append(len(pos_pair_))
             else:
                 pos_loss = 0
 
             if len(neg_pair) > 0:
-                neg_loss = self.neg_topk * torch.sum(neg_pair) / len(neg_pair)
+                if inputs_col.shape[0] != inputs_row.shape[0]:
+                    neg_loss = self.neg_topk * torch.sum(neg_pair) / len(neg_pair)
+                else:
+                    neg_loss = torch.sum(neg_pair)
                 neg_count.append(len(neg_pair))
             else:
                 neg_loss = 0
