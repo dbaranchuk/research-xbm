@@ -62,7 +62,7 @@ class ContrastiveLoss(nn.Module):
         if inputs_col.shape[0] == inputs_row.shape[0]:
             prefix = "batch_"
         else:
-            log_info['memory_pos_loss'] = 1.5 * pos_loss.item() if pos_loss != 0 else 0
+            log_info['memory_pos_loss'] = 3 * pos_loss.item() if pos_loss != 0 else 0
             log_info['memory_neg_loss'] = 1.08 * neg_loss.item() if neg_loss != 0 else 0
             log_info['memory_pos_freqs'] = pos_freqs / n
             log_info['memory_neg_freqs'] = neg_freqs / n
