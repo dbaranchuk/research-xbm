@@ -15,12 +15,13 @@ class ContrastiveLoss(nn.Module):
         self.total_pos_freqs = []
         self.total_neg_freqs = []
         self.neg_topk = cfg.XBM.NEG_TOPK
-        # self.pos_topk = cfg.XBM.POS_TOPK
 
-    def forward(self, inputs_col, targets_col, inputs_row, target_row):
+    def forward(self, inputs_col, targets_col, inputs_row, target_row, neg_inputs_row=None):
         n = inputs_col.size(0)
         # Compute similarity matrix
         sim_mat = torch.matmul(inputs_col, inputs_row.t())
+        if neg_inputs_row is not None:
+            neg_sim_mat = torch.matmul(inputs_col, neg_inputs_row.t())
         epsilon = 1e-5
         loss = list()
 
@@ -31,12 +32,14 @@ class ContrastiveLoss(nn.Module):
         for i in range(n):
             pos_pair_ = torch.masked_select(sim_mat[i], targets_col[i] == target_row)
             pos_pair_ = torch.masked_select(pos_pair_, pos_pair_ < 1 - epsilon)
-            neg_pair_ = torch.masked_select(sim_mat[i], targets_col[i] != target_row)
+            if neg_inputs_row is not None:
+                neg_pair_ = neg_sim_mat[i]
+            else:
+                neg_pair_ = torch.masked_select(sim_mat[i], targets_col[i] != target_row)
 
             if inputs_col.shape[0] != inputs_row.shape[0] and self.neg_topk > 0:
                 top_idxs = torch.topk(neg_pair_, min(self.neg_topk, len(neg_pair_)), largest=True)[1]
                 neg_pair = neg_pair_[top_idxs]
-
             else:
                 neg_pair = torch.masked_select(neg_pair_, neg_pair_ > self.margin)
 

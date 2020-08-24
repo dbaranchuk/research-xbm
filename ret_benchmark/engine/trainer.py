@@ -156,27 +156,8 @@ def do_train(
         log_info["batch_loss"] = loss.item()
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION and not xbm.is_empty:
-            if cfg.XBM.UPDATE_FEATS_ITERATION > 0 and \
-               iteration % cfg.XBM.UPDATE_FEATS_ITERATION == 0 and \
-               iteration > cfg.XBM.UPDATE_FEATS_START_ITERATION:
-                t0 = time.time()
-                compute_all_feats(cfg, model, train_loader, xbm)
-                print(f"Update all feats in XBM: {time.time() - t0}s")
-                if iteration >= 10000 and iteration % 1000 == 0:
-                    os.makedirs(writer.log_dir, exist_ok=True)
-                    np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
-                            allow_pickle=True)
-                    np.save(writer.log_dir + f"/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
-                            allow_pickle=True)
-            elif iteration >= 30000 and iteration % 1000 == 0:
-                os.makedirs(writer.log_dir, exist_ok=True)
-                np.save(writer.log_dir + f"/xbm_pos_freqs_{iteration:06d}.npy", criterion.total_pos_freqs,
-                        allow_pickle=True)
-                np.save(writer.log_dir + f"/xbm_neg_freqs_{iteration:06d}.npy", criterion.total_neg_freqs,
-                        allow_pickle=True)
-
-            xbm_feats, xbm_targets = xbm.get()
-            xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
+            xbm_feats, xbm_random_feats, xbm_targets = xbm.get()
+            xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets, neg_inputs_row=xbm_random_feats)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = 1.5 * loss + cfg.XBM.WEIGHT * xbm_loss
 

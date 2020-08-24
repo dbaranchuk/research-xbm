@@ -12,6 +12,7 @@ class XBM:
     def __init__(self, cfg):
         self.K = cfg.XBM.SIZE
         self.feats = torch.zeros(self.K, 128).cuda()
+        self.random_feats = torch.nn.functional.normalize(torch.randn(self.K, 128).cuda(), p=2, dim=1)
         self.targets = torch.zeros(self.K, dtype=torch.long).cuda() - 1
         self.ptr = 0
 
@@ -25,9 +26,9 @@ class XBM:
 
     def get(self):
         if self.is_full:
-            return self.feats, self.targets
+            return self.feats, self.random_feats, self.targets
         else:
-            return self.feats[:self.ptr], self.targets[:self.ptr]
+            return self.feats[:self.ptr], self.random_feats[:self.ptr], self.targets[:self.ptr]
 
     def enqueue_dequeue(self, feats, targets):
         if len(targets) > self.K:
