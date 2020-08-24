@@ -25,9 +25,6 @@ class ContrastiveLoss(nn.Module):
         epsilon = 1e-5
         loss = list()
 
-        pos_freqs = np.zeros(inputs_row.shape[0])
-        neg_freqs = np.zeros(inputs_row.shape[0])
-
         neg_count, pos_count = list(), list()
         for i in range(n):
             pos_pair_ = torch.masked_select(sim_mat[i], targets_col[i] == target_row)
@@ -42,11 +39,6 @@ class ContrastiveLoss(nn.Module):
                 neg_pair = neg_pair_[top_idxs]
             else:
                 neg_pair = torch.masked_select(neg_pair_, neg_pair_ > self.margin)
-
-            if inputs_col.shape[0] != inputs_row.shape[0]:
-                pos_freqs += ((sim_mat[i] < 1 - epsilon) & (targets_col[i] == target_row)).cpu().numpy()
-                margin = neg_pair[-1]
-                neg_freqs += ((sim_mat[i] > margin - epsilon) & (targets_col[i] != target_row)).cpu().numpy()
 
             if len(pos_pair_) > 0:
                 if inputs_col.shape[0] != inputs_row.shape[0]:
@@ -73,10 +65,6 @@ class ContrastiveLoss(nn.Module):
         else:
             log_info['memory_pos_loss'] = pos_loss.item() if pos_loss != 0 else 0
             log_info['memory_neg_loss'] = neg_loss.item() if neg_loss != 0 else 0
-            log_info['memory_pos_freqs'] = pos_freqs / n
-            log_info['memory_neg_freqs'] = neg_freqs / n
-            self.total_pos_freqs.append(pos_freqs / n)
-            self.total_neg_freqs.append(neg_freqs / n)
             prefix = "memory_"
 
         if len(pos_count) != 0:
@@ -90,5 +78,6 @@ class ContrastiveLoss(nn.Module):
             log_info[f"{prefix}average_neg"] = 0
 
         log_info[f"{prefix}non_zero"] = len(neg_count)
+        print(loss)
         loss = sum(loss) / n  # / all_targets.shape[1]
         return loss
