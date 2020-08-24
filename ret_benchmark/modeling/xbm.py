@@ -28,7 +28,7 @@ class XBM:
         if self.is_full:
             return self.feats, self.random_feats, self.targets
         else:
-            return self.feats[:self.ptr], self.random_feats[:self.ptr], self.targets[:self.ptr]
+            return self.feats[:self.ptr], self.random_featы, self.targets[:self.ptr]
 
     def enqueue_dequeue(self, feats, targets):
         if len(targets) > self.K:
