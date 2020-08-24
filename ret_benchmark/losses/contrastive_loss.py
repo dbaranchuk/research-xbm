@@ -42,7 +42,6 @@ class ContrastiveLoss(nn.Module):
 
             if inputs_col.shape[0] != inputs_row.shape[0]:
                 pos_freqs += ((sim_mat[i] < 1 - epsilon) & (targets_col[i] == target_row)).cpu().numpy()
-                print(neg_pair)
                 margin = neg_pair[-1]
                 neg_freqs += ((sim_mat[i] > margin - epsilon) & (targets_col[i] != target_row)).cpu().numpy()
 
