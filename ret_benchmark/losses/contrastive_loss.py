@@ -12,8 +12,6 @@ class ContrastiveLoss(nn.Module):
     def __init__(self, cfg):
         super(ContrastiveLoss, self).__init__()
         self.margin = 0.5
-        self.total_pos_freqs = []
-        self.total_neg_freqs = []
         self.neg_topk = cfg.XBM.NEG_TOPK
 
     def forward(self, inputs_col, targets_col, inputs_row, target_row, neg_inputs_row=None):
@@ -78,7 +76,7 @@ class ContrastiveLoss(nn.Module):
             log_info[f"{prefix}average_neg"] = 0
 
         log_info[f"{prefix}non_zero"] = len(neg_count)
-        if inputs_col.shape[0] != inputs_row.shape[0]:
-            print(loss, sum(loss) / n)
+        # if inputs_col.shape[0] != inputs_row.shape[0]:
+        #     print(loss, sum(loss) / n)
         loss = sum(loss) / n  # / all_targets.shape[1]
         return loss

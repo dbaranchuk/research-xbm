@@ -157,7 +157,9 @@ def do_train(
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION and not xbm.is_empty:
             xbm_feats, xbm_random_feats, xbm_targets = xbm.get()
+            # print(xbm_random_feats.shape)
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets, neg_inputs_row=xbm_random_feats)
+            # print(xbm_loss)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = 1.5 * loss + cfg.XBM.WEIGHT * xbm_loss
 
@@ -165,7 +167,7 @@ def do_train(
         loss.backward()
         optimizer.step()
 
-        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION - 1: # -1 to collect xbm of batch_size
+        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION - 2: # -1 to collect xbm of batch_size
             xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         batch_time = time.time() - end
