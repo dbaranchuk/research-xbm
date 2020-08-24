@@ -78,6 +78,7 @@ class ContrastiveLoss(nn.Module):
             log_info[f"{prefix}average_neg"] = 0
 
         log_info[f"{prefix}non_zero"] = len(neg_count)
-        print(loss)
+        if inputs_col.shape[0] == inputs_row.shape[0]:
+            print(loss)
         loss = sum(loss) / n  # / all_targets.shape[1]
         return loss
