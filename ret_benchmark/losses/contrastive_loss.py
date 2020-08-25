@@ -49,7 +49,7 @@ class ContrastiveLoss(nn.Module):
 
             if len(neg_pair) > 0:
                 if inputs_col.shape[0] != inputs_row.shape[0]:
-                    neg_loss = 20 * torch.sum(neg_pair) / len(neg_pair)  # TODO: name 13
+                    neg_loss = 15 * torch.sum(neg_pair) / len(neg_pair)  # TODO: name 13
                 else:
                     neg_loss = torch.sum(neg_pair)
                 neg_count.append(len(neg_pair))
