@@ -211,7 +211,7 @@ def do_train(
 
         if iteration > cfg.XBM.START_ITERATION + 1000:
             cov_loss_val = cov_loss(feats, xbm_feats)
-            loss += 10 * cov_loss_val
+            loss += 100 * cov_loss_val
             log_info["cov_loss"] = cov_loss_val.item()
 
         optimizer.zero_grad()
