@@ -165,7 +165,9 @@ def do_train(
 
         if iteration > cfg.XBM.START_ITERATION:
             cov_loss = covariance_loss()
-            loss += cov_loss(feats, xbm_feats)
+            cov_loss_val = cov_loss(feats, xbm_feats)
+            loss += cov_loss_val
+            log_info["cov_loss"] = cov_loss_val.item()
 
         optimizer.zero_grad()
         loss.backward()
