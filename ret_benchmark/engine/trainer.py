@@ -18,7 +18,7 @@ from ret_benchmark.utils.metric_logger import MetricLogger
 from ret_benchmark.utils.log_info import log_info
 from ret_benchmark.modeling.xbm import XBM
 from ret_benchmark.data import build_data
-
+from ret_benchmark.losses import covariance_loss
 
 def flush_log(writer, iteration):
     for k, v in log_info.items():
@@ -162,6 +162,10 @@ def do_train(
             # print(xbm_loss)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = 1.5 * loss + cfg.XBM.WEIGHT * xbm_loss
+
+        if iteration > cfg.XBM.START_ITERATION:
+            cov_loss = covariance_loss()
+            loss += cov_loss(feats, xbm_feats)
 
         optimizer.zero_grad()
         loss.backward()

@@ -14,12 +14,10 @@ class ContrastiveLoss(nn.Module):
         self.margin = 0.5
         self.neg_topk = cfg.XBM.NEG_TOPK
 
-    def forward(self, inputs_col, targets_col, inputs_row, target_row, neg_inputs_row=None):
+    def forward(self, inputs_col, targets_col, inputs_row, target_row):
         n = inputs_col.size(0)
         # Compute similarity matrix
         sim_mat = torch.matmul(inputs_col, inputs_row.t())
-        if neg_inputs_row is not None:
-            neg_sim_mat = torch.matmul(inputs_col, neg_inputs_row.t())
         epsilon = 1e-5
         loss = list()
 
@@ -27,10 +25,7 @@ class ContrastiveLoss(nn.Module):
         for i in range(n):
             pos_pair_ = torch.masked_select(sim_mat[i], targets_col[i] == target_row)
             pos_pair_ = torch.masked_select(pos_pair_, pos_pair_ < 1 - epsilon)
-            if neg_inputs_row is not None:
-                neg_pair_ = neg_sim_mat[i]
-            else:
-                neg_pair_ = torch.masked_select(sim_mat[i], targets_col[i] != target_row)
+            neg_pair_ = torch.masked_select(sim_mat[i], targets_col[i] != target_row)
 
             if inputs_col.shape[0] != inputs_row.shape[0] and self.neg_topk > 0:
                 top_idxs = torch.topk(neg_pair_, min(self.neg_topk, len(neg_pair_)), largest=True)[1]
@@ -39,19 +34,13 @@ class ContrastiveLoss(nn.Module):
                 neg_pair = torch.masked_select(neg_pair_, neg_pair_ > self.margin)
 
             if len(pos_pair_) > 0:
-                if inputs_col.shape[0] != inputs_row.shape[0]:
-                    pos_loss = 6 * torch.sum(-pos_pair_ + 1) / len(pos_pair_)  # TODO: name 6
-                else:
-                    pos_loss = torch.sum(-pos_pair_ + 1)
+                pos_loss = torch.sum(-pos_pair_ + 1)
                 pos_count.append(len(pos_pair_))
             else:
                 pos_loss = 0
 
             if len(neg_pair) > 0:
-                if inputs_col.shape[0] != inputs_row.shape[0]:
-                    neg_loss = 15 * torch.sum(neg_pair) / len(neg_pair)  # TODO: name 13
-                else:
-                    neg_loss = torch.sum(neg_pair)
+                neg_loss = torch.sum(neg_pair)
                 neg_count.append(len(neg_pair))
             else:
                 neg_loss = 0
