@@ -48,5 +48,5 @@ class CovarianceLoss(nn.Module):
         cov_matrix = cov(cat_inputs, rowvar=False)
         assert cov_matrix.shape[-1] == 128
         non_diag_cov = (cov_matrix - torch.diag(cov_matrix.diag()))
-        cov_loss = non_diag_cov.mean()
+        cov_loss = abs(non_diag_cov).mean()
         return cov_loss
