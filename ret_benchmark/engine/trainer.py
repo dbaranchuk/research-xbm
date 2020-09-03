@@ -155,6 +155,7 @@ def do_train(
         loss = criterion(feats, targets, feats, targets)
         log_info["batch_loss"] = loss.item()
 
+        cov_loss = covariance_loss()
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION and not xbm.is_empty:
             xbm_feats, xbm_targets = xbm.get()
             # print(xbm_random_feats.shape)
