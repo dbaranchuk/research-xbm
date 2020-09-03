@@ -18,7 +18,7 @@ from ret_benchmark.utils.metric_logger import MetricLogger
 from ret_benchmark.utils.log_info import log_info
 from ret_benchmark.modeling.xbm import XBM
 from ret_benchmark.data import build_data
-from ret_benchmark.losses import covariance_loss
+from ret_benchmark.losses.registry import LOSS
 
 def flush_log(writer, iteration):
     for k, v in log_info.items():
@@ -155,7 +155,7 @@ def do_train(
         loss = criterion(feats, targets, feats, targets)
         log_info["batch_loss"] = loss.item()
 
-        cov_loss = covariance_loss()
+        cov_loss = LOSS['covariance_loss']
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION and not xbm.is_empty:
             xbm_feats, xbm_targets = xbm.get()
             # print(xbm_random_feats.shape)
