@@ -26,7 +26,7 @@ def build_transforms(cfg, is_train=True):
         mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD
     )
     if is_train:
-        color_transform = T.Compose([get_color_distortion(), RandomGaussianBlur()])
+        # color_transform = T.Compose([get_color_distortion(), RandomGaussianBlur()])
         transform = T.Compose(
             [
                 T.Resize(size=cfg.INPUT.ORIGIN_SIZE[0]),
@@ -34,7 +34,7 @@ def build_transforms(cfg, is_train=True):
                     scale=cfg.INPUT.CROP_SCALE, size=cfg.INPUT.CROP_SIZE[0]
                 ),
                 T.RandomHorizontalFlip(p=cfg.INPUT.FLIP_PROB),
-                color_transform,
+                # color_transform,
                 T.ToTensor(),
                 normalize_transform,
             ]
