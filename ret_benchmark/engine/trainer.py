@@ -193,8 +193,8 @@ def do_train(
         targets = targets.to(device)
         feats = model(images)
 
-        # if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
-        #     xbm.enqueue_dequeue(feats.detach(), targets.detach())
+        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION:
+            xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         loss = criterion(feats, targets, feats, targets)
         log_info["batch_loss"] = loss.item()
@@ -203,14 +203,11 @@ def do_train(
             xbm_feats, xbm_targets = xbm.get()
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
             log_info["xbm_loss"] = xbm_loss.item()
-            loss = 1.5 * loss + cfg.XBM.WEIGHT * xbm_loss
+            loss = loss + cfg.XBM.WEIGHT * xbm_loss
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
-        if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION - 2: # -1 to collect xbm of batch_size
-            xbm.enqueue_dequeue(feats.detach(), targets.detach())
 
         batch_time = time.time() - end
         end = time.time()
