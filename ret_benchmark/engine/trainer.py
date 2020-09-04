@@ -108,7 +108,6 @@ def compute_all_feats(cfg, model, train_loader, xbm):
         counter += len(images)
     model.train()
 
-    # cfg.DATA.TRAIN_BATCHSIZE = prev_tbs
     if left_old_feats >= 0:
         xbm.feats[:left_old_feats] = xbm_feats[:left_old_feats]
         xbm.targets[:left_old_feats] = xbm_targets[:left_old_feats]
@@ -151,7 +150,6 @@ def do_train(
 
     iteration = 0
 
-    cov_loss = CovarianceLoss()
     _train_loader = iter(train_loader)
     while iteration <= max_iter:
         try:
@@ -203,16 +201,9 @@ def do_train(
 
         if cfg.XBM.ENABLE and iteration > cfg.XBM.START_ITERATION and not xbm.is_empty:
             xbm_feats, xbm_targets = xbm.get()
-            # print(xbm_random_feats.shape)
             xbm_loss = criterion(feats, targets, xbm_feats, xbm_targets)
-            # print(xbm_loss)
             log_info["xbm_loss"] = xbm_loss.item()
             loss = 1.5 * loss + cfg.XBM.WEIGHT * xbm_loss
-
-        if iteration > 25000:
-            cov_loss_val = cov_loss(feats, xbm_feats)
-            loss += 20000 * cov_loss_val
-            log_info["cov_loss"] = cov_loss_val.item()
 
         optimizer.zero_grad()
         loss.backward()
