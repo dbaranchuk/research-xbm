@@ -44,7 +44,7 @@ def cov(m, rowvar=True, inplace=False):
 @LOSS.register("covariance_loss")
 class CovarianceLoss(nn.Module):
     def forward(self, inputs_col, inputs_row):
-        cat_inputs = torch.cat([inputs_col, inputs_row], dim=0)[:10000]
+        cat_inputs = torch.cat([inputs_col, inputs_row], dim=0)[:20000]
         cov_matrix = cov(cat_inputs, rowvar=False)
         assert cov_matrix.shape[-1] == 128
         non_diag_cov = (cov_matrix - torch.diag(cov_matrix.diag()))
