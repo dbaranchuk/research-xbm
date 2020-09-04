@@ -14,7 +14,7 @@ class LinearNorm(nn.Module):
         self.fc.apply(weights_init_kaiming)
 
     def forward(self, x):
-        x =
+        x = self.bn(x)
         x = self.fc(x)
         x = nn.functional.normalize(x, p=2, dim=1)
         return x
